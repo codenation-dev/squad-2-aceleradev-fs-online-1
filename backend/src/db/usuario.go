@@ -1,36 +1,45 @@
 package db
 
 import (
-	"log"
 	"models"
 )
 
 // Gravar efetua a gravação do usuário.
-func Gravar(usuario *models.Usuario) {
+func Gravar(usuario *models.Usuario) error {
 
 	sql := `INSERT INTO USUARIO(USU_EMAIL, USU_NOME, USU_SENHA, USU_RECEBERALERTA)
-	VALUES("$1", "$2", "$3", $4)
+	VALUES($1, $2, $3, $4)
 	RETURNING (USU_ID, USU_DATACRIACAO, "")`
 
-	con := ObtenhaConexao()
+	con, err := ObtenhaConexao()
+	if err != nil {
+		return err
+	}
 	defer con.Close()
 
 	rows := con.QueryRow(sql, usuario.Email, usuario.Nome, usuario.Senha, usuario.RecebeAlertas)
-	err := rows.Scan(usuario.ID, usuario.DataCriacao, usuario.Senha)
+	err = rows.Scan(&usuario.ID, &usuario.DataCriacao, &usuario.Senha)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 // Remover efetua a remoção de um usuário.
-func Remover(id string) {
-	sql := `DELETE FROM USUARIO WHERE USU_ID = "$1"`
+func Remover(id string) error {
+	sql := `DELETE FROM USUARIO WHERE USU_ID = $1`
 
-	con := ObtenhaConexao()
+	con, err := ObtenhaConexao()
+	if err != nil {
+		return err
+	}
 	defer con.Close()
 
-	_, err := con.Exec(sql)
+	_, err = con.Exec(sql, id)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
