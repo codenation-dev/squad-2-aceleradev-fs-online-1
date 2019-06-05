@@ -2,6 +2,7 @@ package db
 
 import (
 	"models"
+	"time"
 )
 
 // Gravar efetua a gravação do usuário.
@@ -9,7 +10,7 @@ func Gravar(usuario *models.Usuario) error {
 
 	sql := `INSERT INTO USUARIO(USU_EMAIL, USU_NOME, USU_SENHA, USU_RECEBERALERTA)
 	VALUES($1, $2, $3, $4)
-	RETURNING (USU_ID, USU_DATACRIACAO, "")`
+	RETURNING (USU_ID, USU_DATACRIACAO)`
 
 	con, err := ObtenhaConexao()
 	if err != nil {
@@ -17,11 +18,17 @@ func Gravar(usuario *models.Usuario) error {
 	}
 	defer con.Close()
 
+	var id string
+	var dataCriacao time.Time
 	rows := con.QueryRow(sql, usuario.Email, usuario.Nome, usuario.Senha, usuario.RecebeAlertas)
-	err = rows.Scan(&usuario.ID, &usuario.DataCriacao, &usuario.Senha)
+	err = rows.Scan(&id, &dataCriacao)
 	if err != nil {
 		return err
 	}
+
+	usuario.ID = id
+	usuario.DataCriacao = dataCriacao
+	usuario.Senha = ""
 
 	return nil
 }
