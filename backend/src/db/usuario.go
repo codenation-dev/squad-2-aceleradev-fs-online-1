@@ -9,7 +9,7 @@ import (
 func Gravar(usuario *models.Usuario) error {
 
 	sql := `INSERT INTO USUARIO(USU_EMAIL, USU_NOME, USU_SENHA, USU_RECEBERALERTA)
-	VALUES($1, $2, $3, $4)
+	VALUES($1, $2, crypt($3, gen_salt("bf")), $4)
 	RETURNING (USU_ID, USU_DATACRIACAO)`
 
 	con, err := ObtenhaConexao()
