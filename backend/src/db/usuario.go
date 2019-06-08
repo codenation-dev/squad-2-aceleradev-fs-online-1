@@ -10,7 +10,7 @@ func Gravar(usuario *models.Usuario) error {
 
 	sql := `INSERT INTO USUARIO(USU_EMAIL, USU_NOME, USU_SENHA, USU_RECEBERALERTA)
 	VALUES($1, $2, crypt($3, gen_salt("bf")), $4)
-	RETURNING (USU_ID, USU_DATACRIACAO)`
+	RETURNING (USU_CODIGO, USU_DATACRIACAO)`
 
 	con, err := ObtenhaConexao()
 	if err != nil {
@@ -18,15 +18,15 @@ func Gravar(usuario *models.Usuario) error {
 	}
 	defer con.Close()
 
-	var id string
+	var codigo int32
 	var dataCriacao time.Time
 	rows := con.QueryRow(sql, usuario.Email, usuario.Nome, usuario.Senha, usuario.RecebeAlertas)
-	err = rows.Scan(&id, &dataCriacao)
+	err = rows.Scan(&codigo, &dataCriacao)
 	if err != nil {
 		return err
 	}
 
-	usuario.ID = id
+	usuario.Codigo = codigo
 	usuario.DataCriacao = dataCriacao
 	usuario.Senha = ""
 
@@ -34,8 +34,8 @@ func Gravar(usuario *models.Usuario) error {
 }
 
 // Remover efetua a remoção de um usuário.
-func Remover(id string) error {
-	sql := `DELETE FROM USUARIO WHERE USU_ID = $1`
+func Remover(codigo int32) error {
+	sql := `DELETE FROM USUARIO WHERE USU_CODIGO = $1`
 
 	con, err := ObtenhaConexao()
 	if err != nil {
@@ -43,7 +43,7 @@ func Remover(id string) error {
 	}
 	defer con.Close()
 
-	_, err = con.Exec(sql, id)
+	_, err = con.Exec(sql, codigo)
 	if err != nil {
 		return err
 	}

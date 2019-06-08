@@ -6,7 +6,7 @@ import (
 
 // Usuario representa o cadastro de um usuário
 type Usuario struct {
-	ID            string
+	Codigo        int32
 	Email         string
 	Nome          string
 	Senha         string
