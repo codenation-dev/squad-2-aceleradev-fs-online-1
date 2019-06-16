@@ -2,7 +2,9 @@ package api
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
+	"models"
 	"net/http"
 	"strconv"
 
@@ -61,16 +63,75 @@ func ConsultarListaUsuarioAPI(w http.ResponseWriter, r *http.Request) {
 }
 
 func CriarUsuarioAPI(w http.ResponseWriter, r *http.Request) {
-	teste := []byte("CriarUsuarioAPI")
-	w.Write(teste)
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	var usuario *models.Usuario
+	err = json.Unmarshal(body, usuario)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	err = db.GravarUsuario(usuario)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	body, err = json.Marshal(usuario)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Write(body)
 }
 
 func AlterarUsuarioAPI(w http.ResponseWriter, r *http.Request) {
-	teste := []byte("AlterarUsuarioAPI")
-	w.Write(teste)
+
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	var usuario *models.Usuario
+	err = json.Unmarshal(body, usuario)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	err = db.AlterarUsuario(usuario)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func RemoverUsuarioAPI(w http.ResponseWriter, r *http.Request) {
-	teste := []byte("RemoverUsuarioAPI")
-	w.Write(teste)
+
+	params := mux.Vars(r)
+
+	codigo, err := strconv.Atoi(params["codigo"])
+	if err != nil || codigo == 0 {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	err = db.RemoverUsuario(codigo)
+	if err != nil {
+		tratamentoErro(err, http.StatusBadRequest, w)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
